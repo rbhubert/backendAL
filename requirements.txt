@@ -1,0 +1,14 @@
+flask===1.1.2
+flask-cors===3.0.8
+pymongo===3.10.1
+
+google===2.0.3
+newspaper3k===0.2.8
+tweepy===3.8.0
+twarc===1.8.3
+praw===7.0.0
+
+scikit-learn===0.23.0
+pandas===1.0.3
+
+fasttext===0.9.2
