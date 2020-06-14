@@ -99,7 +99,7 @@ def search_news():
         }
 
         google.newsDB.add_classification_model(doc[google.news.URL], model_name, classification)
-        #google.newsDB.add_info(doc)
+        # google.newsDB.add_info(doc)
 
     return Response("everythinfineee wey", status=200, mimetype='application/json')
 
@@ -160,7 +160,6 @@ def classify_news(model_name):
         # google.newsDB.add_info(doc)
         google.newsDB.add_classification_model(doc[google.news.URL], model_name, classification_m)
 
-
     return Response("everythinfineee wey", status=200, mimetype='application/json')
 
 
@@ -183,6 +182,10 @@ def __get_relevants_docs(documents):
 
     result = options1.append(options2)
     return result
+
+
+if __name__ == '__main__':
+    FLASK_APP.run()
 
 # @FLASK_APP.route('/search/google/<keywords>')
 # def search_news(keywords):
