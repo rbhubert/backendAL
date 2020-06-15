@@ -12,13 +12,14 @@ from utils.singleton import Singleton
 # MONGO_USER = os.environ.get('MONGODB_USER', "user")
 # MONGO_PASSWORD = os.environ.get('MONGODB_PASSWORD', "password")
 
-MONGODB_URI = os.environ.get('MONGODB_TEST', DATABASE)
+MONGODB_URI = os.environ.get('MONGODB_URI', DATABASE)
+MONGODB_NAME = os.environ.get('MONGODB_NAME', DATABASE_NAME)
 
 # Database connection. This class is a Singleton.
 class Database(metaclass=Singleton):
     def __init__(self):
         client = pymongo.MongoClient(MONGODB_URI)
-        db_name = DATABASE_NAME
+        db_name = MONGODB_NAME
         self.__db = client[db_name]
 
     def __getitem__(self, item):
