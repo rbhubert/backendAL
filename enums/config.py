@@ -1,4 +1,5 @@
 DATABASE = "mongodb://localhost:27017/activeLearningLoop"
+DATABASE_NAME = "activeLearningLoop"
 #DATABASE = "mongodb://localhost:27017/newsSearch"
 
 TWITTER_AUTH = ("lQO8UHXA1eI6f6sHwAHRxzw6O", "qxdFcpzEvrcawOKPNzoT8pYMJ0AERLayFiENJKPti86PQb9MNi")

@@ -2,20 +2,20 @@ import os
 
 import pymongo
 
+from enums import model, sources_base
 from enums import news, tweets, reddit
 from enums.config import *
 from enums.database import DBCollections
 from utils.singleton import Singleton
 
 MONGODB_URI = os.environ.get('MONGODB_URI', DATABASE)
-from enums import model, sources_base
 
 
 # Database connection. This class is a Singleton.
 class Database(metaclass=Singleton):
     def __init__(self):
         client = pymongo.MongoClient(MONGODB_URI)
-        db_name = MONGODB_URI.rsplit('/', 1)[-1]
+        db_name = DATABASE_NAME
         self.__db = client[db_name]
 
     def __getitem__(self, item):
@@ -71,6 +71,7 @@ class RecoveredInfo:
         return self.db[self.collection].find({sources_base.CLASSIFICATION: {"$exists": False},
                                               nested: model_name},
                                              {"_id": 0})
+
 
 class Model:
     def __init__(self):

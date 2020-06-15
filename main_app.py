@@ -10,13 +10,16 @@ from flask_cors import CORS
 from classifier.model import DeepLearningModel
 from db.database import modelDB
 from enums import model, sources_base
+from enums.config import DATABASE
 from search import google, reddit, twitter
-
 FLASK_APP = Flask(__name__)
 CORS(FLASK_APP)  # allowing request from different urls... (localhost in another port)
 
 # just to avoid a windows error... o.ó
 os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+
+
+
 
 
 @FLASK_APP.route('/models')
