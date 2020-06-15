@@ -1,0 +1,1 @@
+web: gunicorn main_app:FLASK_APP --log-file -
