@@ -9,12 +9,16 @@ from enums.database import DBCollections
 from utils.singleton import Singleton
 
 MONGODB_URI = os.environ.get('MONGODB_URI', DATABASE)
+MONGO_USER = os.environ.get('MONGODB_USER', "user")
+MONGO_PASSWORD = os.environ.get('MONGODB_PASSWORD', "password")
 
 
 # Database connection. This class is a Singleton.
 class Database(metaclass=Singleton):
     def __init__(self):
-        client = pymongo.MongoClient(MONGODB_URI)
+        client = pymongo.MongoClient(MONGODB_URI,
+                                     username=MONGO_USER,
+                                     password=MONGO_PASSWORD)
         db_name = DATABASE_NAME
         self.__db = client[db_name]
 
