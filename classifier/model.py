@@ -1,14 +1,11 @@
 # All kind of imports...
 
 import fasttext
-import pandas
-from nltk.corpus import stopwords
 
 from classifier.preprocessing import preprocessing_google, preprocessing_reddit, preprocessing_twitter
 from db.database import modelDB
 from enums import sources_base, model
 
-stopwords = stopwords.words('english')
 directory_files = "./files/"
 directory_models = "./models/"
 

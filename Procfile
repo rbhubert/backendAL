@@ -1,1 +1,1 @@
-web: gunicorn main_app:FLASK_APP --log-file -
+web: gunicorn --bind 0.0.0.0:$PORT flaskapp:FLASK_APP
