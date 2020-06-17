@@ -43,12 +43,7 @@ class DeepLearningModel:
 
         file = open(file_train, "w")
         for index, row in training_set.iterrows():
-            print("ROW", row)
-            print(row[sources_base.TEXT])
-            print(row[sources_base.CLASSIFICATION])
-            print(self.original_name)
-            print(row[sources_base.CLASSIFICATION][self.original_name])
-            line = "__label__" + row[sources_base.CLASSIFICATION][self.original_name] + ' ' + row[sources_base.TEXT]
+            line = "__label__" + row[sources_base.CLASSIFICATION] + ' ' + row[sources_base.TEXT]
             file.write(line + "\n")
 
         return file_train
