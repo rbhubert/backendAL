@@ -18,11 +18,13 @@ class DeepLearningModel:
         if newModel:
             self.model = None
             self.dataType = dataType
+            self.save_model(only_db=True)
         else:
             model_info = modelDB.get_model(self.model_id)
-            # directory_models + self.model_id + ".bin"
-            self.model = fasttext.load_model(model_info[model.FILE])
             self.dataType = model_info[model.DATA_TYPE]
+
+            if model.FILE in model_info:
+                self.model = fasttext.load_model(model_info[model.FILE])
 
         if self.dataType == model.ModelDataType.GOOGLE:
             self.preprocess = preprocessing_google
@@ -41,7 +43,7 @@ class DeepLearningModel:
 
         file = open(file_train, "w")
         for index, row in training_set.iterrows():
-            line = "__label__" + row[sources_base.CLASSIFICATION] + ' ' + row[sources_base.TEXT]
+            line = "__label__" + row[sources_base.CLASSIFICATION][self.original_name] + ' ' + row[sources_base.TEXT]
             file.write(line + "\n")
 
         return file_train
@@ -52,7 +54,16 @@ class DeepLearningModel:
         self.save_model()
         return True
 
-    def save_model(self):
+    def save_model(self, only_db=False):
+        if only_db:
+            model_info = {
+                model.ID: self.model_id,
+                model.ORIGINAL_NAME: self.original_name,
+                model.DATA_TYPE: self.dataType
+            }
+            modelDB.save_model(model_info)
+            return True
+
         model_file = directory_models + self.model_id + ".bin"
         self.model.save_model(model_file)
         model_info = {

@@ -8,12 +8,9 @@ from enums.config import *
 from enums.database import DBCollections
 from utils.singleton import Singleton
 
-# MONGODB_URI = os.environ.get('MONGODB_URI', DATABASE)
-# MONGO_USER = os.environ.get('MONGODB_USER', "user")
-# MONGO_PASSWORD = os.environ.get('MONGODB_PASSWORD', "password")
-
 MONGODB_URI = os.environ.get('MONGODB_URI', DATABASE)
 MONGODB_NAME = os.environ.get('MONGODB_NAME', DATABASE_NAME)
+
 
 # Database connection. This class is a Singleton.
 class Database(metaclass=Singleton):
@@ -42,8 +39,9 @@ class RecoveredInfo:
 
     def add_classification_model(self, info_id, model_name, classification):
         id_dict = self.__get_id()
+        path = sources_base.CLASSIFICATION_BY_MODEL + "." + model_name
         return self.db[self.collection].update_one({id_dict: info_id},
-                                                   {"$set": {sources_base.CLASSIFICATION_BY_MODEL: classification}})
+                                                   {"$set": {path: classification}})
 
     def __get_id(self):
         if self.collection == DBCollections.NEWS:
@@ -64,16 +62,16 @@ class RecoveredInfo:
     def get_all_infoItems(self):
         return self.db[self.collection].find({}, {"_id": 0})
 
-    def get_all_truchis(self):
-        return self.db[self.collection].find({sources_base.CLASSIFICATION: {"$exists": False}}, {"_id": 0})
-
     def get_all_by_model(self, model_name, classify_by_user=False):
+        path = sources_base.CLASSIFICATION + "." + model_name
+
         if classify_by_user:
-            return self.db[self.collection].find({sources_base.CLASSIFICATION: {"$exists": True}},
+            return self.db[self.collection].find({path: {"$exists": True}},
                                                  {"_id": 0})
-        nested = sources_base.CLASSIFICATION_BY_MODEL + "." + sources_base.CLASSIFICATION_MODEL_NAME
-        return self.db[self.collection].find({sources_base.CLASSIFICATION: {"$exists": False},
-                                              nested: model_name},
+
+        nested = sources_base.CLASSIFICATION_BY_MODEL + "." + model_name
+        return self.db[self.collection].find({path: {"$exists": False},
+                                              nested: {"$exists": True}},
                                              {"_id": 0})
 
 
@@ -93,6 +91,9 @@ class Model:
 
     def get_model(self, model_name):
         return self.db[self.collection].find_one({model.ID: model_name}, {"_id": 0})
+
+    def exist_model(self, model_name):
+        return self.db[self.collection].find_one({model.ID: model_name}, {"_id": 0}) is not None
 
 
 # Creation of a NewsDataBase Instance.

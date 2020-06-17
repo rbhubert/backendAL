@@ -55,6 +55,7 @@ def get_content(news_url):
             news.CREATION_TIME: article.publish_date,
             news.COMMENTS: [],
             news.LAST_COMMENT: "",
+            news.sources_base.CLASSIFICATION: {},
             news.sources_base.CLASSIFICATION_BY_MODEL: {}
         }
 
@@ -67,7 +68,7 @@ def get_content(news_url):
         return None
 
 
-def retrieve_news(list_urls_r, list_urls_i):
+def retrieve_news(model_name, list_urls_r, list_urls_i):
     dataframe = pandas.DataFrame(columns=[news.sources_base.TEXT, news.CLASSIFICATION])
 
     for url in list_urls_r:
@@ -75,7 +76,7 @@ def retrieve_news(list_urls_r, list_urls_i):
         if news_item is None:
             continue
 
-        news_item[news.CLASSIFICATION] = "relevant"
+        news_item[news.CLASSIFICATION][model_name] = "relevant"
         newsDB.add_info(news_item)
 
         text = get_text(news_item)
@@ -88,7 +89,7 @@ def retrieve_news(list_urls_r, list_urls_i):
         if news_item is None:
             continue
 
-        news_item[news.CLASSIFICATION] = "no_relevant"
+        news_item[news.CLASSIFICATION][model_name] = "no_relevant"
         newsDB.add_info(news_item)
 
         text = news_item[news.TITLE] + news_item[news.CONTENT]

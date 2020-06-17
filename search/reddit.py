@@ -62,5 +62,5 @@ def get_dic_post(post, is_reply):
     return reddit_post
 
 
-def retrieve_posts(list_posts_r, list_posts_i):
+def retrieve_posts(model_name, list_posts_r, list_posts_i):
     pass

@@ -78,5 +78,5 @@ def get_dic_of_tweet(tweet, is_comment):
     return dic_tweet
 
 
-def retrieve_tweets(list_tweets_r, list_tweets_i):
+def retrieve_tweets(model_name, list_tweets_r, list_tweets_i):
     pass
