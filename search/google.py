@@ -76,7 +76,6 @@ def retrieve_news(model_name, list_urls_r, list_urls_i):
         if news_item is None:
             continue
 
-        print(model_name)
         news_item[news.CLASSIFICATION][model_name] = "relevant"
         newsDB.add_info(news_item)
 
