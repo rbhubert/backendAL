@@ -62,7 +62,7 @@ def classify_news(model_name, new_documents):
 
     for doc in all_documents:
         text = google.get_text(doc)
-        classification = doc[google.news.CLASSIFICATION]
+        classification = doc[google.news.CLASSIFICATION][model_name]
         dictionary = {sources_base.TEXT: text, sources_base.CLASSIFICATION: classification}
         training_docs = training_docs.append(dictionary, ignore_index=True)
 
