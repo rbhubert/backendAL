@@ -75,6 +75,7 @@ class RecoveredInfo:
                                              {"_id": 0})
 
 
+
 class Model:
     def __init__(self):
         self.db = Database()

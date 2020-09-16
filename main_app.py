@@ -95,10 +95,17 @@ def search_news():
     return Response(jobId_js, status=200, mimetype='application/json')
 
 
-@FLASK_APP.route('/relevant/google/<model_name>')
-def get_relevant_news(model_name):
-    result = task_handler.relevant_google(model_name)
-    resultjs = json.dumps(result)
+# @FLASK_APP.route('/relevant_old/google/<model_name>')
+# def get_relevant_news_old(model_name):
+#     result = task_handler.relevant_google_old(model_name)
+#     resultjs = json.dumps(result, default=str)
+#     return Response(resultjs, status=200, mimetype='application/json')
+
+
+@FLASK_APP.route('/relevant/google/<model_name>/<range>')
+def get_relevant_news(model_name, range):
+    result = task_handler.relevant_google(model_name, range)
+    resultjs = json.dumps(result, default=str)
     return Response(resultjs, status=200, mimetype='application/json')
 
 
@@ -109,6 +116,24 @@ def classify_news(model_name):
     job = tasksQueue.enqueue(task_handler.classify_news, model_name, new_documents)
     jobId_js = json.dumps(job.get_id())
     return Response(jobId_js, status=200, mimetype='application/json')
+
+
+@FLASK_APP.route('/plot/google/<model_name>')
+def get_plot_news(model_name):
+    response = task_handler.get_info_plot(model_name)
+    response_js = json.dumps(response)
+    return Response(response_js, status=200, mimetype='application/json')
+
+
+@FLASK_APP.route('/update/google', methods=['POST'])
+def update_info_doc():
+    url_doc = request.form.get('url')
+    title = request.form.get('title')
+    content = request.form.get('content')
+
+    response = task_handler.update_info_document(url_doc, title, content)
+    response_js = json.dumps(response)
+    return Response(response_js, status=200, mimetype='application/json')
 
 
 if __name__ == '__main__':

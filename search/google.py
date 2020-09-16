@@ -9,7 +9,9 @@ from db.database import newsDB
 from enums import news
 
 files_folder = "files/"
-user_agent = "Mozilla/5.0"
+# user_agent = "Mozilla/5.0"
+
+user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 
 
 # TODO correct error message
@@ -24,7 +26,7 @@ def search_in_google(keywords):
     try:
         for result in search_news(keywords, extra_params={'filter': '0'}, user_agent=user_agent):
             print("    >>>  " + result)
-            content = get_content(result)
+            content = get_content(keywords, result)
             if content is not None:
                 list_news.append(content)
 
@@ -39,9 +41,18 @@ def search_in_google(keywords):
     return list_news
 
 
-def get_content(news_url):
+def get_content(keywords, news_url):
     if newsDB.exist_info(news_url):
-        return newsDB.get_info(news_url)
+        news_item = newsDB.get_info(news_url)
+        if news.KEYWORDS in news_item:
+            if type(news_item[news.KEYWORDS]) == str:
+                news_item[news.KEYWORDS] = [news_item[news.KEYWORDS], keywords]
+            else:
+                news_item[news.KEYWORDS].append(keywords)
+        else:
+            news_item[news.KEYWORDS] = [keywords]
+        newsDB.add_info(news_item)
+        return news_item
 
     try:
         article = Article(news_url)
@@ -55,6 +66,7 @@ def get_content(news_url):
             news.CREATION_TIME: article.publish_date,
             news.COMMENTS: [],
             news.LAST_COMMENT: "",
+            news.KEYWORDS: [keywords],
             news.sources_base.CLASSIFICATION: {},
             news.sources_base.CLASSIFICATION_BY_MODEL: {}
         }
@@ -72,7 +84,7 @@ def retrieve_news(model_name, list_urls_r, list_urls_i):
     dataframe = pandas.DataFrame(columns=[news.sources_base.TEXT, news.CLASSIFICATION])
 
     for url in list_urls_r:
-        news_item = get_content(url)
+        news_item = get_content(model_name, url)
         if news_item is None:
             continue
 
@@ -85,7 +97,7 @@ def retrieve_news(model_name, list_urls_r, list_urls_i):
         time.sleep(0.5)
 
     for url in list_urls_i:
-        news_item = get_content(url)
+        news_item = get_content(model_name, url)
         if news_item is None:
             continue
 
@@ -101,4 +113,4 @@ def retrieve_news(model_name, list_urls_r, list_urls_i):
 
 
 def get_text(document):
-    return document[news.TITLE] + document[news.CONTENT]
+    return document[news.TITLE] + " " + document[news.CONTENT]

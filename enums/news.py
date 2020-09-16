@@ -7,7 +7,7 @@ CREATION_TIME = "creation_time"
 LAST_COMMENT = "last_comment"
 CLASSIFICATION = sources_base.CLASSIFICATION
 COMMENTS = sources_base.COMMENTS
-
+KEYWORDS = "search_keywords"
 
 class Comments:
     ID = "id"

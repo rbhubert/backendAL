@@ -10,6 +10,21 @@ def clean_text(x):
     return text
 
 
+# Adds spaces around any special character
+# . , ; ! ? ( ) ' "
+def space_special(x):
+    # remove end of lines & tabs
+    special_whitespace_pattern = r'\s{2,}'
+    text = re.sub(special_whitespace_pattern, '', x)
+
+    # identify special characters
+    pattern = r'(\.|,|;|!|\?|-|\(|\)|\'|"|’|“|”|\*|\/|:)'
+    text = re.sub(pattern, r' \1 ', text)
+
+    text = re.sub(special_whitespace_pattern, ' ', text)
+    return text
+
+
 # Change number by #, because most embeddings have preprocessed their text like this
 def clean_numbers(x):
     if bool(re.search(r'\d', x)):
@@ -70,10 +85,14 @@ def replace_contractions(text):
 
 
 def preprocessing_google(text):
+    # to lowercase
     text = text.lower()
-    text = clean_text(text)
-    text = clean_numbers(text)
-    text = replace_contractions(text)
+    # spaces around special characters
+    text = space_special(text)
+    # text = text.lower()
+    # text = clean_text(text)
+    # text = clean_numbers(text)
+    # text = replace_contractions(text)
     return text
 
 
