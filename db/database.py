@@ -62,18 +62,27 @@ class RecoveredInfo:
     def get_all_infoItems(self):
         return self.db[self.collection].find({}, {"_id": 0})
 
-    def get_all_by_model(self, model_name, classify_by_user=False):
+    def get_all_by_model(self, model_name, classified_by_user=False, include_user=False):
         path = sources_base.CLASSIFICATION + "." + model_name
 
-        if classify_by_user:
+        if classified_by_user:
             return self.db[self.collection].find({path: {"$exists": True}},
                                                  {"_id": 0})
 
         nested = sources_base.CLASSIFICATION_BY_MODEL + "." + model_name
+
+        if include_user:
+            classified_user = list(self.db[self.collection].find({path: {"$exists": True}},
+                                                                 {"_id": 0}))
+            only_model = list(self.db[self.collection].find({path: {"$exists": False},
+                                                             nested: {"$exists": True}},
+                                                            {"_id": 0}))
+            all_list = classified_user + only_model
+            return all_list
+
         return self.db[self.collection].find({path: {"$exists": False},
                                               nested: {"$exists": True}},
                                              {"_id": 0})
-
 
 
 class Model:

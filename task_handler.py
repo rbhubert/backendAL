@@ -57,15 +57,19 @@ def classify_news(model_name, new_documents):
         google.newsDB.add_classification_user(doc[google.news.URL], {model_name: classiffication})
 
     # all documents classified by the user
-    all_documents = list(google.newsDB.get_all_by_model(model_name, True))
+    classified_by_user = pandas.DataFrame(list(google.newsDB.get_all_by_model(model_name, classified_by_user=True)))
+    training_docs = classified_by_user.apply(
+        lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION][model_name]]), axis=1)
+    training_docs.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
 
-    training_docs = pandas.DataFrame(columns=[sources_base.TEXT, sources_base.CLASSIFICATION])
-
-    for doc in all_documents:
-        text = google.get_text(doc)
-        classification = doc[google.news.CLASSIFICATION][model_name]
-        dictionary = {sources_base.TEXT: text, sources_base.CLASSIFICATION: classification}
-        training_docs = training_docs.append(dictionary, ignore_index=True)
+    # classified_by_user = list(google.newsDB.get_all_by_model(model_name, True))
+    # training_docs = pandas.DataFrame(columns=[sources_base.TEXT, sources_base.CLASSIFICATION])
+    #
+    # for doc in classified_by_user:
+    #     text = google.get_text(doc)
+    #     classification = doc[google.news.CLASSIFICATION][model_name]
+    #     dictionary = {sources_base.TEXT: text, sources_base.CLASSIFICATION: classification}
+    #     training_docs = training_docs.append(dictionary, ignore_index=True)
 
     model_classifier = DeepLearningModel(name=model_name, newModel=False)
     model_classifier.train(training_set=training_docs)
@@ -176,7 +180,7 @@ def __get_docs_information(model_name, documents):
         result_trace_model["text"].append(title)
         max_n = max(max_n, nwords)
 
-    more_documents = list(google.newsDB.get_all_by_model(model_name, classify_by_user=True))
+    more_documents = list(google.newsDB.get_all_by_model(model_name, classified_by_user=True))
     df_user = pandas.DataFrame(more_documents)
 
     result_trace_user = {
@@ -233,9 +237,10 @@ def __get_docs_information(model_name, documents):
 
 
 def __test_re_classify(model_name):
-    classified_by_user = pandas.DataFrame(list(google.newsDB.get_all_by_model(model_name, classify_by_user=True)))
+    classified_by_user = pandas.DataFrame(list(google.newsDB.get_all_by_model(model_name, classified_by_user=True)))
     training_docs = classified_by_user.apply(
         lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION][model_name]]), axis=1)
+    training_docs.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
 
     classifier = DeepLearningModel(name=model_name, newModel=False)
     # if you need to train your model with different parameters, you can change them here
@@ -257,27 +262,60 @@ def __test_re_classify(model_name):
         google.newsDB.add_classification_model(doc[google.news.URL], model_name, classification_m)
 
 
-# __test_re_classify("KharisseModel")
+#__test_re_classify("KharisseModel")
 
 
-def __test_accuracy(model_name):
+def get_classified_traces(model_name):
     classifier = DeepLearningModel(name=model_name, newModel=False)
-    classified_by_user = google.newsDB.get_all_by_model(model_name, classify_by_user=True)
+    classified_by_user = google.newsDB.get_all_by_model(model_name, classified_by_user=True)
 
     total_docs = classified_by_user.count()
     classified_correctly = 0
 
+    result_trace_relevant = {
+        "x": [],
+        "y": [],
+        "text": []
+    }
+
+    result_trace_no_relevant = {
+        "x": [],
+        "y": [],
+        "text": []
+    }
+
     for document in classified_by_user:
+        title = document[google.news.TITLE]
         document_text = google.get_text(document)
         classification_user = document["classification_user"][model_name]
         classification_model = classifier.predict(document_text)
-        classification_model_text = classification_model["classification_value"].replace("__label__", "")
+
+        classification_model_probability = classification_model[sources_base.CLASSIFICATION_PROBABILITY]
+        classification_model_text = classification_model[sources_base.CLASSIFICATION_MODEL].replace("__label__", "")
+
+        nwords = len(document_text.split())
+
+        if classification_model_text == "relevant":
+            result_trace_relevant["x"].append(classification_model_probability)
+            result_trace_relevant["y"].append(nwords)
+            result_trace_relevant["text"].append(title)
+        else:
+            result_trace_no_relevant["x"].append(1 - classification_model_probability)
+            result_trace_no_relevant["y"].append(nwords)
+            result_trace_no_relevant["text"].append(title)
 
         if classification_user == classification_model_text:
             classified_correctly += 1
 
+    traces = {
+        "trace_no_relevant": result_trace_no_relevant,
+        "trace_relevant": result_trace_relevant
+    }
+
     print("total docs:", total_docs)
     print("classified correctly: ", classified_correctly)
     print("accuracy: ", total_docs / classified_correctly)
+
+    return traces
 
 # __test_accuracy("KharisseModel")

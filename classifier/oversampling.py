@@ -5,6 +5,7 @@ from enums import sources_base
 # choose random samples of the minority class up to the number
 # of documents in the majority class
 def basic_oversampling(df_docs):
+    print("function: basic_oversampling")
     only_relevant = df_docs[df_docs[sources_base.CLASSIFICATION] == "relevant"]
     only_no_relevant = df_docs[df_docs[sources_base.CLASSIFICATION] == "no_relevant"]
 
@@ -12,10 +13,12 @@ def basic_oversampling(df_docs):
     number_no_relevants = len(only_no_relevant.index)
     difference = abs(number_no_relevants - number_relevants)
 
+    print("     ", difference, "random docs of the minority class")
+
     if number_relevants > number_no_relevants:
-        extras = only_no_relevant.sample(difference)
+        extras = only_no_relevant.sample(difference, replace=True)
     else:
-        extras = only_relevant.sample(difference)
+        extras = only_relevant.sample(difference, replace=True)
 
     df_docs = df_docs.append(extras, ignore_index=True)
 

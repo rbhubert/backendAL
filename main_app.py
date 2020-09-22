@@ -125,6 +125,13 @@ def get_plot_news(model_name):
     return Response(response_js, status=200, mimetype='application/json')
 
 
+@FLASK_APP.route('/plot/classified/google/<model_name>')
+def get_classified_traces(model_name):
+    response = task_handler.get_classified_traces(model_name)
+    response_js = json.dumps(response)
+    return Response(response_js, status=200, mimetype='application/json')
+
+
 @FLASK_APP.route('/update/google', methods=['POST'])
 def update_info_doc():
     url_doc = request.form.get('url')
