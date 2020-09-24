@@ -55,3 +55,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# files related to model, training docs and model learning
+*.txt
+*.bin
+*.mp4
