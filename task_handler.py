@@ -62,15 +62,6 @@ def classify_news(model_name, new_documents):
         lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION][model_name]]), axis=1)
     training_docs.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
 
-    # classified_by_user = list(google.newsDB.get_all_by_model(model_name, True))
-    # training_docs = pandas.DataFrame(columns=[sources_base.TEXT, sources_base.CLASSIFICATION])
-    #
-    # for doc in classified_by_user:
-    #     text = google.get_text(doc)
-    #     classification = doc[google.news.CLASSIFICATION][model_name]
-    #     dictionary = {sources_base.TEXT: text, sources_base.CLASSIFICATION: classification}
-    #     training_docs = training_docs.append(dictionary, ignore_index=True)
-
     model_classifier = DeepLearningModel(name=model_name, newModel=False)
     model_classifier.train(training_set=training_docs)
 
@@ -262,7 +253,7 @@ def __test_re_classify(model_name):
         google.newsDB.add_classification_model(doc[google.news.URL], model_name, classification_m)
 
 
-#__test_re_classify("KharisseModel")
+# __test_re_classify("KharisseModel")
 
 
 def get_classified_traces(model_name):
@@ -318,4 +309,42 @@ def get_classified_traces(model_name):
 
     return traces
 
+
 # __test_accuracy("KharisseModel")
+
+
+import numpy as np
+
+
+# Get documents sort by relevance (predicted by model) from the most relevant ones
+# to the medium in the spectrum (those with 50% relevance).
+# Its gives 'examples_by_bin' examples for each 5% of relevance. This parameter can be changed.
+def get_documents_in_range(model_name, examples_by_bin=4):
+    def __probability(row):
+        probability = row[model_name][sources_base.CLASSIFICATION_PROBABILITY]
+        value = probability if row[model_name][
+                                   sources_base.CLASSIFICATION_MODEL] == "relevant" else 1 - probability
+
+        return value
+
+    all_documents = pandas.DataFrame(list(google.newsDB.get_all_by_model(model_name)))
+    all_documents[sources_base.CLASSIFICATION_PROBABILITY] = all_documents[sources_base.CLASSIFICATION_BY_MODEL].apply(
+        lambda dict_x: __probability(dict_x))
+
+    docs_for_return = {}
+    range_np = np.arange(0.5, 1.0 + 0.05, 0.05)
+    last = range_np[-1]
+    for element in reversed(range_np[:-1]):
+        documents_in_bin = all_documents[
+            (all_documents[sources_base.CLASSIFICATION_PROBABILITY] <= last) & (all_documents[
+                                                                                    sources_base.CLASSIFICATION_PROBABILITY] > element)]
+
+        text = str(int(last * 100)) + "%-" + str(int(element * 100)) + "%"
+        last = element
+
+        n_examples = min(examples_by_bin, len(documents_in_bin))
+        docs_for_return[text] = [element[google.news.URL] for index, element in documents_in_bin.sample(n_examples).iterrows()]
+
+    return docs_for_return
+
+

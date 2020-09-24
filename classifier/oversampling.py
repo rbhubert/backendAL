@@ -1,28 +1,28 @@
 from enums import sources_base
 
 
-# basic random oversampling
-# choose random samples of the minority class up to the number
-# of documents in the majority class
+# Basic random oversampling.
+# Pick random samples from the minority class until you get the number of documents in the majority class.
+# For 2 classes :  'relevant' , 'not relevant'
+
+# TODO general to any n number of classes
 def basic_oversampling(df_docs):
-    print("function: basic_oversampling")
+    print("     Function: basic_oversampling")
     only_relevant = df_docs[df_docs[sources_base.CLASSIFICATION] == "relevant"]
     only_no_relevant = df_docs[df_docs[sources_base.CLASSIFICATION] == "no_relevant"]
 
     number_relevants = len(only_relevant.index)
     number_no_relevants = len(only_no_relevant.index)
     difference = abs(number_no_relevants - number_relevants)
-
-    print("     ", difference, "random docs of the minority class")
+    minority_class = "relevant" if number_relevants < number_no_relevants else "no_relevant"
 
     if number_relevants > number_no_relevants:
+        print("     -> ", difference, "random docs pick from the minority class (", minority_class, ")")
         extras = only_no_relevant.sample(difference, replace=True)
     else:
         extras = only_relevant.sample(difference, replace=True)
 
-    df_docs = df_docs.append(extras, ignore_index=True)
-
-    return df_docs
+    return df_docs.append(extras, ignore_index=True)
 
 
 class TypeOversampling:

@@ -11,18 +11,17 @@ from enums import sources_base
 from search import google
 
 
-def __probability(row, model_name):
-    probability = row[model_name][sources_base.CLASSIFICATION_PROBABILITY]
-    value = probability if row[model_name][
-                               sources_base.CLASSIFICATION_MODEL] == "relevant" else 1 - probability
-
-    return value
-
-
 def histogram(model_name):
+    def __probability(row):
+        probability = row[model_name][sources_base.CLASSIFICATION_PROBABILITY]
+        value = probability if row[model_name][
+                                   sources_base.CLASSIFICATION_MODEL] == "relevant" else 1 - probability
+
+        return value
+
     all_documents = pandas.DataFrame(list(newsDB.get_all_by_model(model_name)))
     all_documents[sources_base.CLASSIFICATION_PROBABILITY] = all_documents[sources_base.CLASSIFICATION_BY_MODEL].apply(
-        lambda dict_x: __probability(dict_x, model_name))
+        lambda dict_x: __probability(dict_x))
 
     new_df = all_documents.groupby(
         pandas.cut(all_documents[sources_base.CLASSIFICATION_PROBABILITY], np.arange(0, 1.0 + 0.05, 0.05))).count()[
@@ -32,6 +31,8 @@ def histogram(model_name):
     plt.show()
 
 
+# TODO add information about number of examples for each loop, and total number of examples provided
+# by the user at the beginning
 def a_histogram(model_name, n_examples=10, n_classified=4):
     def __get_classification(row):
         dict_classification = row[sources_base.CLASSIFICATION]
@@ -67,15 +68,15 @@ def a_histogram(model_name, n_examples=10, n_classified=4):
                 documents_classified_by_user[sources_base.CLASSIFICATION] == "relevant"].sample(n=math.ceil(div))
             examples_d = examples_d.append(documents_classified_by_user[documents_classified_by_user[
                                                                             sources_base.CLASSIFICATION] == "no_relevant"].sample(
-                n=math.floor(div))).apply(
-                lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION]]), axis=1)
-            examples_d.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
+                n=math.floor(div)))
         else:
             n_examples = min(number_examples, len(documents_classified_by_user.index))
 
-            examples_d = documents_classified_by_user.sample(n=n_examples).apply(
-                lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION]]), axis=1)
-            examples_d.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
+            examples_d = documents_classified_by_user.sample(n=n_examples)
+
+        examples_d = examples_d.apply(
+            lambda row: pandas.Series([google.get_text(row), row[google.news.CLASSIFICATION]]), axis=1)
+        examples_d.columns = [sources_base.TEXT, sources_base.CLASSIFICATION]
 
         documents_classified_by_user = documents_classified_by_user.drop(examples_d.index)
         training_docs = training_docs.append(examples_d)
@@ -106,16 +107,24 @@ def a_histogram(model_name, n_examples=10, n_classified=4):
 
     # in all_documents are all the documents and the probability value of each loop as 'loop#'
     # where # goes from 0 to n_loop
+    range_np = np.arange(0, 1.0 + 0.05, 0.05)
+
+    x_label = []
+    last = str(int(range_np[0] * 100))
+    for x in range_np[1:]:
+        text = last + "%-"
+        last = str(int(x * 100))
+        x_label.append(text + last + "%")
 
     new_df = pandas.DataFrame()
-    for i in range(0, n_loop):
+
+    for i in range(0, n_loop + 1):
         name_column = "loop" + str(i)
-        new_df[name_column] = all_documents.groupby(
-            pandas.cut(all_documents[name_column], np.arange(0, 1.0 + 0.05, 0.05))).count()[
-            name_column]
-    x_label = ["0%-5%", "5%-10%", "10%-15%", "15%-20%", "20%-25%", "25%-30%", "30%-35%", "35%-40%", "40%-45%",
-               "45%-50%", "50%-55%", "55%-60%", "60%-65%",
-               "65%-70%", "70%-75%", "75%-80%", "80%-85%", "85%-90%", "90%-95%", "95%-100%"]
+        y = all_documents.groupby(
+            pandas.cut(all_documents[name_column], range_np)).count()[name_column]
+
+        new_df[name_column] = y
+
     new_df["x_label"] = x_label
 
     fig = plt.figure()
@@ -142,9 +151,10 @@ def a_histogram(model_name, n_examples=10, n_classified=4):
     file = model_name + "__evolution.mp4"
     anim.save(file, writer=animation.FFMpegWriter(fps=2))
 
-    #plt.show()
+    # plt.show()
 
 
-model_name = "KharisseModel"
+#model_name = "KharisseModel" # start with 6 examples
+model_name = "Gender_based_violence"  # start with 23 examples
 # histogram(model_name)
-a_histogram(model_name, n_examples=6)
+a_histogram(model_name, n_examples=23)

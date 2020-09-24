@@ -25,7 +25,6 @@ def space_special(x):
     return text
 
 
-# Change number by #, because most embeddings have preprocessed their text like this
 def clean_numbers(x):
     if bool(re.search(r'\d', x)):
         x = re.sub('[0-9]{5,}', '#####', x)
